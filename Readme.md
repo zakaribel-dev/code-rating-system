@@ -1,4 +1,4 @@
-#  Déploiement Haute Disponibilité – Code Rating System
+#  Déploiement Code Rating System
 
 Cette documentation explique comment un collègue peut **cloner le projet** et **tout lancer** en local avec :
 - Les **containers PostgreSQL et frontend côté Windows**
