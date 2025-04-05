@@ -103,12 +103,18 @@ Ce script :
 
 ---
 
-## 5️ Tips
+## pti tips
 
 - Si les containers ne démarrent pas : vérifier les logs avec `sudo pcs status` ou `docker logs <container>`
-- Si `submissions` n’existe pas : vérifiez que le schéma SQL est bien injecté au 1er lancement
-- Pour reset proprement : `docker volume rm infra_postgres_master_data`
+- Tu veux tout restart au propre côté VM ? Voici un petit sortilège :
 
+
+```bash
+
+cd ~/code-rating-system/infra
+sudo ./create-ressources.sh
+
+```
 ---
 
 ##  Fait avec amour par Jean et Zakaria
