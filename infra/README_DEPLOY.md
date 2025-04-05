@@ -43,12 +43,10 @@ Vérifie que les tables ont bien été créées (contenu de `postgres-master/sch
 
 ## 2 Côté Linux (VM node1 et node2)
 
-### A. Cloner le repo et renommer le backend
+### A. Cloner le repo
 
 ```bash
-git clone <repo_url>
-cd code-rating-system/infra
-mv node1 backend
+git clone https://github.com/zakaribel-dev/code-rating-system-bis.git
 ```
 
 ### B. Vérifier les fichiers `.env`
@@ -60,7 +58,7 @@ PORT=3000
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin123
 POSTGRES_DB=code_rating
-POSTGRES_HOST=<IP de la machine Windows>  # ⚠️ exemple : 192.168.56.1
+POSTGRES_HOST=<IP de la machine Windows>  #  exemple : 192.168.56.1 (faites un ipconfig sur un powershell pour connaitre votre ip)
 POSTGRES_PORT=5433
 ```
 
