@@ -41,7 +41,6 @@ Ce qui sera lancé :
 - `postgres-replica` (port `5434`)
 - `frontend` React (port `3000` → http://localhost:3000)
 
->  Vérifie que les tables sont bien créées grâce à `schema.sql` injecté au démarrage.
 
 ---
 
