@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# script pour faire en sorte que les ip soient reachable par ma machine locale via ssh.. (Je préfère powershell)
+# script pour faire en sorte que les ip soient reachable par ma machine locale via ssh.. (Je préfère powershell) 
+# PS : à faire sur les deux VM !
 
 NODE1_IP="192.168.56.11"
 NODE2_IP="192.168.56.12"
