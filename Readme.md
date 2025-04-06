@@ -1,30 +1,35 @@
+
 #  Déploiement Code Rating System
 
 Cette documentation explique comment un collègue peut **cloner le projet** et **tout lancer** en local avec :
-- Les **containers PostgreSQL et frontend côté Windows**
-- Les **VMs Linux (node1 + node2)** avec Nginx, les APIs, le worker, le script `create-ressources.sh` et la configuration Pacemaker.
+- Les **containers PostgreSQL + frontend sur Windows**
+- Les **VMs Linux (node1 + node2)** avec Nginx, les APIs, le worker, Pacemaker et le script magique `create-ressources.sh`
 
 ---
 
-## Pré-requis
+##  Prérequis
 
-### Côté Windows (hôte)
-
+###  Côté Windows (machine hôte)
 - Docker Desktop installé
 - Git installé
-- Port 5433 (master), 5434 (replica) et 3000 (frontend) ouverts
+- Les ports suivants doivent être libres : `5433` (Postgres master), `5434` (replica), `3000` (frontend)
 
-### Côté Linux (VMs node1 / node2)
-
-- Ubuntu Server 20.04 ou supérieur
-- SSH actif pour transfert de fichiers
-- Pacemaker / Corosync installés (`sudo apt install pacemaker corosync pcs`)
-- Docker installé (`curl -fsSL https://get.docker.com | sh`)
-- Clonage du repo dans `/home/<user>/code-rating-system`
+###  Côté Linux (VMs node1 & node2)
+- Ubuntu Server 20.04 ou +
+- SSH activé (pour les transferts si besoin)
+- `pacemaker`, `corosync`, `pcs` installés :  
+  ```bash
+  sudo apt install pacemaker corosync pcs -y
+  ```
+- Docker installé :  
+  ```bash
+  curl -fsSL https://get.docker.com | sh
+  ```
+- Projet cloné dans `/home/<user>/code-rating-system`
 
 ---
 
-## 1 Côté Windows : lancer la base de données + frontend
+##  Étape 1 - Lancer la DB + frontend sur Windows
 
 Depuis PowerShell à la racine du projet (`code-rating-system/infra`) :
 
@@ -32,39 +37,37 @@ Depuis PowerShell à la racine du projet (`code-rating-system/infra`) :
 docker compose up -d
 ```
 
- Cela démarre :
-- `postgres-master` sur le port `5433`
-- `postgres-replica` sur le port `5434`
-- Le `frontend` React sur `http://localhost:3000`
+Ce qui sera lancé :
+- `postgres-master` (port `5433`)
+- `postgres-replica` (port `5434`)
+- `frontend` React (port `3000` → http://localhost:3000)
 
-Vérifie que les tables ont bien été créées (contenu de `postgres-master/schema.sql` est bien injecté).
+>  Vérifie que les tables sont bien créées grâce à `schema.sql` injecté au démarrage.
 
 ---
 
-## 2 Côté Linux (VM node1 et node2)
+## 🔧 Étape 2 - Préparer les VMs (node1 et node2)
 
-### A. Cloner le repo
+### A. Cloner le repo :
 
 ```bash
 git clone https://github.com/zakaribel-dev/code-rating-system-bis.git
 ```
 
-### B. Vérifier les fichiers `.env`
+### B. Adapter les fichiers `.env` :
 
-Exemple de `.env` dans `infra/backend/.env` et `infra/worker/.env` :
+Exemple dans `infra/backend/.env` et `infra/worker/.env` :
 
 ```env
 PORT=3000
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin123
 POSTGRES_DB=code_rating
-POSTGRES_HOST=<IP de la machine Windows>  #  exemple : 192.168.56.1 (faites un ipconfig sur un powershell pour connaitre votre ip)
+POSTGRES_HOST=192.168.56.1  # IP de ta machine Windows (trouve-la avec `ipconfig`)
 POSTGRES_PORT=5433
 ```
 
-> Fais bien attention à adapter l'`IP` de `POSTGRES_HOST` à celle de l'hôte Windows (via `ipconfig`).
-
-### C. Build des images
+### C. Builder les images Docker :
 
 ```bash
 cd code-rating-system/infra
@@ -75,38 +78,43 @@ docker build -t code-nginx ./nginx
 
 ---
 
-## 3️ Lancer les ressources HA (sur node1)
+##  Étape 3 - Lancer les ressources HA (depuis `node1`)
 
 ```bash
+cd ~/code-rating-system/infra
 sudo ./create-ressources.sh
 ```
 
 Ce script :
-- Supprime les anciennes ressources Pacemaker
-- Crée `api1`, `api2`, `worker1`, `nginx1`, `virtual-ip`
-- Monte les bons volumes (`/infra/backend:/app`, `/infra/worker:/app`, etc.)
-- Définit les contraintes (ordre de démarrage + colocation avec IP flottante)
+- Supprime les anciennes ressources Pacemaker (API / worker / IP flottante)
+- Crée les containers `api1`, `api2`, `worker1`, `nginx1`, et l'IP flottante `192.168.56.101`
+- Monte les bons volumes (backend / worker / uploads)
+- Attribue automatiquement une IP statique à `enp0s8` (`192.168.56.11` ou `56.12` selon la VM)
+- Redémarre proprement le service SSH
 
 ---
 
-## 4️ Tester
+##  Étape 4 - Tester
 
-### Accès web :
-- Frontend : http://localhost:3000
-- Backend : https://192.168.56.101:8443/test
+### Frontend :
+- Accessible sur : http://localhost:3000
 
-### Test de soumission :
-- Connectez-vous avec un compte admin
-- Créez un exercice
-- Soumettez un fichier `.py` ou `.c`
-- Le worker attribuera une note automatiquement
+### Backend :
+- Accessible via reverse proxy HTTPS sur : https://192.168.56.101:8443/test
+
+### Exemple de test complet :
+- Connexion avec un compte admin
+- Création d’un exercice
+- Envoi d’un fichier `.py` ou `.c`
+- Note générée automatiquement par le worker 
 
 ---
 
-## pti tips
+##  Pti tips 
 
 - Si les containers ne démarrent pas : vérifier les logs avec `sudo pcs status` ou `docker logs <container>`
-- Tu veux tout restart au propre côté VM ? Voici un petit sortilège :
+
+- Tu veux tout restart au propre côté VM ? Voici un petit sort tout droit sorti d'harry potter :
 
 
 ```bash
@@ -117,4 +125,4 @@ sudo ./create-ressources.sh
 ```
 ---
 
-##  Fait avec amour par Jean et Zakaria
+##  Fait avec amour par Jean & Zakaria

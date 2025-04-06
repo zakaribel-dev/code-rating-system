@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# Variables
+# Petites variables des familles..
 NODE1_PATH="/home/zak/code-rating-system/infra/node1"
 WORKER_PATH="/home/zak/code-rating-system/infra/worker"
 UPLOADS_PATH="/home/zak/code-rating-system/infra/uploads"
 ENV_NODE="$NODE1_PATH/.env"
 ENV_WORKER="$WORKER_PATH/.env"
 
-# Étape 1 : Suppression des anciennes ressources
+# Étape 1 : Petit clean des anciennes ressources (on sait jamais ta vu)
 echo " Suppression des anciennes ressources..."
 for res in api1 api2 worker1 virtual-ip; do
-  sudo pcs resource delete "$res" --force 2>/dev/null && echo "✔️ Supprimé : $res"
+  sudo pcs resource delete "$res" --force 2>/dev/null && echo " Supprimé : $res"
 done
 
-# Étape 2 : Vérifie les images Docker
+# Étape 2 : Vérif des images Docker (cette étape je la fait suite à du vécu.. Comme pour l'étape 1 d'ailleurs)
 echo " Vérification des images Docker..."
-docker image inspect code-api >/dev/null 2>&1 || { echo " Image 'code-api' introuvable."; exit 1; }
-docker image inspect code-worker >/dev/null 2>&1 || { echo " Image 'code-worker' introuvable."; exit 1; }
-echo " Images Docker OK"
+docker image inspect code-api >/dev/null 2>&1 || { echo "Image 'code-api' introuvable."; exit 1; }
+docker image inspect code-worker >/dev/null 2>&1 || { echo "Image 'code-worker' introuvable."; exit 1; }
+echo "Images Docker OK"
 
-# Étape 3 : Création du dossier uploads
+# Étape 3 : Création du dossier uploads (juste pour être sur qu'il soit là car c'est vrmt important dans l'appli)
 mkdir -p "$UPLOADS_PATH"
 
 # Étape 4 : Création des nouvelles ressources
@@ -46,5 +46,7 @@ sudo pcs resource create virtual-ip ocf:heartbeat:IPaddr2 \
 # Étape 5 : Contraintes
 sudo pcs constraint order start virtual-ip then start api1
 sudo pcs constraint colocation add api1 with virtual-ip INFINITY
+sudo pcs constraint colocation add nginx1 with virtual-ip INFINITY
 
-echo " Tout est clean et relancé proprement !"
+
+echo "Tout est clean et relancé proprement ! (On croise les doigts pour que ça marche lol)"
