@@ -102,11 +102,199 @@ Ce script :
 ### Backend :
 - Accessible via reverse proxy HTTPS sur : https://192.168.56.101:8443/test
 
-### Exemple de test complet :
-- Connexion avec un compte admin
-- Création d’un exercice
-- Envoi d’un fichier `.py` ou `.c`
-- Note générée automatiquement par le worker 
+---
+## Base de données
+
+### Tables principales (se référer à `postgres-master/schema.sql`) :
+
+- `users(email, role)`
+- `sessions(user_id, token)`
+- `exercises(title, course, language, expected_output, ...)`
+- `submissions(user_id, exercise, filename, score, status)`
+
+### Utilisateurs admin par défaut
+
+```sql
+INSERT INTO users (email, role)
+VALUES 
+  ('zak@hotmail.fr', 'admin'),
+  ('jean@hotmail.fr', 'admin');
+```
+
+
+## Barème de correction (dans le worker)
+
+| Cas | Score |
+|-----|-------|
+| Sortie exacte (`===`) | 100% |
+| Sortie avec même contenu mais mauvaise casse | 80% |
+| Sortie correcte mais sans `
+` | 50% |
+| Mauvaise sortie | 0% |
+
+---
+
+
+## Comment fonctionne input() et scanf() ?
+Lorsque l’admin crée un exercice avec un champ Input, cette valeur est automatiquement injectée dans le programme de l’étudiant au moment de son exécution.
+
+Par exemple, si l'input est 3 4, alors l'exécution se fait ainsi :
+
+```bash
+echo "3 4" | python3 student_file.py
+```
+
+## Dans ce cas, le code de l’étudiant doit utiliser input() :
+
+```bash
+a, b = map(int, input().split())  # split() sépare l'entrée "3 4" en ['3', '4'] puis map convertit en int..
+print(a + b)
+```
+
+## Pour un fichier C 
+```bash
+echo "3 4" | ./a.out
+```
+
+## Dans ce cas, le code de l’étudiant doit utiliser scanf() :
+
+```bash
+#include <stdio.h>
+int main() {
+    int a, b;
+    scanf("%d %d", &a, &b); # lit les deux entiers injectés
+    printf("%d
+", a + b);
+    return 0;
+}
+```
+
+En fait ça permet de simuler un vrai comportement interactif sans hardcoder les valeurs..
+
+---
+
+
+## Tester le système
+ 
+## Ajouter un exercice (admin)
+
+Accessible via `/ExerciseBuilder` et en étant rôle admin  
+Champs :
+- **Titre**
+- **Cours**
+- **Langage** (Python / C)
+- **Description**
+- **Input (optionnel)** : standard input simulé
+- **Résultat attendu (Expected Output)**
+
+---
+
+
+### Exemple 1 : Hello World
+
+**Admin**
+```bash
+Titre       : Hello World
+Cours       : Cours Python
+Langage     : Python
+Description : Affichez "Hello World"
+Input       : (laisser vide car pas besoin de faire lire avec stdin ou scanf..) 
+Expected    : Hello World
+```
+
+**Soumission (100%)**
+```python
+print("Hello World")
+```
+
+**Soumission (80%)**
+```python
+print("hello world")
+```
+
+---
+
+### Exemple 2 : Addition en C
+
+**Admin**
+```bash
+Titre       : Addition simple
+Cours       : Cours C
+Langage     : C
+Description : Additionnez deux entiers a et b depuis l'entrée standard.
+Input       : 3 4
+Expected    : 7
+```
+
+**Soumission C (100%)**
+```c
+#include <stdio.h>
+int main() {
+    int a, b;
+    scanf("%d %d", &a, &b);
+    printf("%d
+", a + b);
+    return 0;
+}
+```
+
+**Soumission C (50%)**
+```c
+#include <stdio.h>
+int main() {
+    int a, b;
+    scanf("%d %d", &a, &b);
+    printf("%d", a + b); // manque le \n
+
+    return 0;
+}
+```
+
+---
+
+### Exemple 3 : Multiplication Python
+
+**Admin**
+```bash
+Titre       : Multiplication
+Cours       : Cours Python
+Langage     : Python
+Description : Multipliez deux entiers
+Input       : 5 4
+Expected    : 20
+```
+
+**Soumission Python**
+```python
+a, b = map(int, input().split())
+print(a * b)
+```
+
+---
+
+##  Parcours étudiant
+
+1. Connexion avec un email
+2. Sélection du langage, cours, exercice
+3. Soumission d'un fichier `.py` ou `.c`
+4. Attente de correction automatique
+5. Visualisation du statut et du score dans `/my-submissions`
+
+
+---
+
+
+## Respect du cahier des charges
+
+-  HTTPS ready (via Nginx + SSL)
+-  Auth par email
+-  File d'attente + correction auto par worker
+-  Résultats affichés à l’étudiant
+-  Interface admin dédiée  
+-  Haute disponibilité avec :
+  - 2 serveurs web load balancés (Node1 / Node2 via Nginx)
+  - 1 base de données PostgreSQL master + 1 réplica
+
 
 ---
 
