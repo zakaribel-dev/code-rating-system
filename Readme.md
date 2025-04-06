@@ -51,7 +51,7 @@ Ce qui sera lancé :
 ### A. Cloner le repo :
 
 ```bash
-git clone https://github.com/zakaribel-dev/code-rating-system-bis.git
+git clone https://github.com/zakaribel-dev/code-rating-system.git
 ```
 
 ### B. Adapter les fichiers `.env` :
