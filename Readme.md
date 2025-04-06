@@ -25,7 +25,6 @@ Cette documentation explique comment un collègue peut **cloner le projet** et *
   ```bash
   curl -fsSL https://get.docker.com | sh
   ```
-- Projet cloné dans `/home/<user>/code-rating-system`
 
 ---
 
@@ -100,7 +99,9 @@ Ce script :
 - Accessible sur : http://localhost:3000
 
 ### Backend :
-- Accessible via reverse proxy HTTPS sur : https://192.168.56.101:8443/test
+- Accessible via reverse proxy HTTPS sur : https://192.168.56.101:8443  
+
+Vous pouvez test cet endpoint  : https://192.168.56.101:8443/test 
 
 ---
 ## Base de données
@@ -162,7 +163,7 @@ echo "3 4" | ./a.out
 #include <stdio.h>
 int main() {
     int a, b;
-    scanf("%d %d", &a, &b); # lit les deux entiers injectés
+    scanf("%d %d", &a, &b); # lit les deux int injectés
     printf("%d
 ", a + b);
     return 0;
