@@ -9,7 +9,7 @@ ENV_WORKER="$WORKER_PATH/.env"
 
 # Étape 1 : Petit clean des anciennes ressources (on sait jamais ta vu)
 echo " Suppression des anciennes ressources..."
-for res in api1 api2 worker1 virtual-ip; do
+for res in api1 api2 worker1 nginx1 virtual-ip; do 
   sudo pcs resource delete "$res" --force 2>/dev/null && echo " Supprimé : $res"
 done
 
@@ -42,6 +42,13 @@ sudo pcs resource create worker1 ocf:heartbeat:docker \
 
 sudo pcs resource create virtual-ip ocf:heartbeat:IPaddr2 \
   ip=192.168.56.101 cidr_netmask=24 op monitor interval=30s
+
+
+sudo pcs resource create nginx1 ocf:heartbeat:docker \
+  image=code-nginx \
+  run_opts="--rm -p 8443:443" \
+  op monitor interval=30s
+
 
 # Étape 5 : Contraintes
 sudo pcs constraint order start virtual-ip then start api1

@@ -11,10 +11,9 @@ services:
       - POSTGRESQL_REPLICATION_PASSWORD=replica123
     volumes:
       - ./postgres-master/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - postgres_master_data:/bitnami/postgresql
+      - ./data/postgres_master:/bitnami/postgresql
     ports:
       - "5433:5432"
-
 
   postgres-replica:
     image: bitnami/postgresql:14
@@ -28,7 +27,7 @@ services:
     depends_on:
       - postgres-master
     volumes:
-      - postgres_replica_data:/bitnami/postgresql
+      - ./data/postgres_replica:/bitnami/postgresql
     ports:
       - "5434:5432"
 
@@ -41,8 +40,3 @@ services:
     volumes:
       - ../frontend:/app
       - /app/node_modules
-
-volumes:
-  postgres_master_data:
-  postgres_replica_data:
-
