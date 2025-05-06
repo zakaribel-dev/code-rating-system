@@ -312,5 +312,3 @@ sudo ./create-ressources.sh
 
 ```
 ---
-
-##  Fait avec amour par Jean & Zakaria
